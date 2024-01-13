@@ -1,0 +1,87 @@
+/* Stage 2 : Create an automated process using Snowflake to ELT the netflix_titles.csv data from the csv file into the tables.
+*/
+
+-- created a snowflake managered stage.
+CREATE STAGE ambyint_test_stage 
+	DIRECTORY = ( ENABLE = true );
+
+--coudn't figure out how to use put command to copy a csv file to snowflake stage, Uploading the csv manually to 
+-- AMBYINT_TEST_STAGE always got errors, in order to continue, i will try to load csv file to a table with the identical 
+-- colums as the csv file.
+
+
+
+COPY INTO "AMBYINT_TEST"."TEST"."NETFLIX_RAW"
+FROM '@"AMBYINT_TEST"."TEST"."%NETFLIX_RAW1"/__snowflake_temp_import_files__/'
+FILES = ('netflix_titles.csv')
+FILE_FORMAT = (
+    TYPE=CSV,
+    SKIP_HEADER=0,
+    FIELD_DELIMITER=',',
+    TRIM_SPACE=FALSE,
+    FIELD_OPTIONALLY_ENCLOSED_BY=NONE,
+    REPLACE_INVALID_CHARACTERS=TRUE,
+    DATE_FORMAT=AUTO,
+    TIME_FORMAT=AUTO,
+    TIMESTAMP_FORMAT=AUTO
+)
+ON_ERROR=CONTINUE
+PURGE=TRUE;
+
+--try to insert data from NETFLIX_Raw into NETFLIX_TITLE by using the following insert statement, somehow , only one record got inserted?
+
+insert into NETFLIX_TITLE (SHOW_ID ,
+	TYPE,
+	TITLE ,
+	DIRECTOR ,
+	COUNTRY ,
+	DATE_ADDED,
+	RELEASE_YEAR ,
+	RATING ,
+	DURATION ,
+	DESCRIPTION )
+select  SHOW_ID ,
+	TYPE,
+	TITLE ,
+	DIRECTOR ,
+	COUNTRY ,
+	DATE_ADDED,
+	RELEASE_YEAR ,
+	RATING ,
+	DURATION ,
+	DESCRIPTION  from  NETFLIX_raw_data ; 
+
+
+-- wrote a procedure to populate NETFLIX_TITLE_cast table that contains first and last name info. failed to compile!
+-- 
+
+
+CREATE OR REPLACE PROCEDURE insert_cast()
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+$$
+DECLARE 
+  num_commas INT;
+  full_name STRING;
+BEGIN
+  FOR row IN (SELECT SHOW_ID, cast FROM NETFLIX_raw) DO
+    -- get full name string
+    SELECT REGEXP_COUNT(row.cast, ',') INTO num_commas;
+    
+    FOR i IN 1 TO num_commas DO
+      full_name := SPLIT_PART(row.cast, ',', i);
+      
+      INSERT INTO NETFLIX_TITLE_cast (SHOW_ID, first_name, last_name)
+      VALUES (
+        row.SHOW_ID,
+        TRIM(SPLIT_PART(full_name, ' ', 1)), -- AS first_name,
+        TRIM(SPLIT_PART(full_name, ' ', 2))  -- AS last_name
+      );
+      
+    END FOR;
+  END FOR;
+
+  RETURN 'Procedure completed successfully';
+END;
+$$;

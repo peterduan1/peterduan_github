@@ -1,0 +1,122 @@
+/* Stage 1 : Create a database, schema, and tables based on the netflix_titles.csv data using a Dimensional Modelled Design with a Snowflake trial account. Please consider primary, foreign, and table clustering keys.
+*/
+
+
+CREATE DATABASE Ambyint_test;
+CREATE schema test;
+
+-- create this table NETFLIX_RAW_DATA table because i was not able to load csv file data to the tables i created!!
+-- 
+
+create or replace TABLE NETFLIX_RAW_DATA (
+	SHOW_ID VARCHAR(16777216),
+	TYPE VARCHAR(16777216),
+	TITLE VARCHAR(16777216),
+	DIRECTOR VARCHAR(16777216),
+	CAST VARCHAR(16777216),
+	COUNTRY VARCHAR(16777216),
+	DATE_ADDED DATE,
+	RELEASE_YEAR NUMBER(38,0),
+	RATING VARCHAR(16777216),
+	DURATION VARCHAR(16777216),
+	LISTED_IN VARCHAR(16777216),
+	DESCRIPTION VARCHAR(16777216)
+);
+
+-- I was suppose to use these two table, but the data loading part was not sucesseful. But i still use them 
+-- for SQLs
+create or replace TABLE NETFLIX_TITLE cluster by (Release_year)(
+	SHOW_ID  VARCHAR(16777216) NOT NULL,
+	TYPE VARCHAR(16777216),
+	TITLE VARCHAR(16777216),
+	DIRECTOR VARCHAR(16777216),
+	COUNTRY VARCHAR(16777216),
+	DATE_ADDED DATE,
+	RELEASE_YEAR NUMBER(38,0),
+	RATING VARCHAR(16777216),
+	DURATION VARCHAR(16777216),
+	DESCRIPTION VARCHAR(16777216),
+	primary key (SHOW_ID)
+)
+CLUSTER BY (Release_year);
+
+
+create or replace TABLE NETFLIX_TITLE_CAST (
+	SHOW_ID  VARCHAR(16777216) NOT NULL,
+	NAME_FROM_RAWDATA VARCHAR(16777216),
+	FIRST_NAME VARCHAR(16777216),
+	LAST_NAME VARCHAR(16777216),
+    gender VARCHAR(16777216),
+	LISTED_IN VARCHAR(16777216),
+	foreign key (SHOW_ID) references NETFLIX_TITLE(SHOW_ID)
+);
+
+
+
+--Note for MarkK
+
+-- Hi Mark, here is the dementional tables design. but i didn't use them for the test because i had problems dealing with 
+-- the gaven csv file. i am afraid of that if i use this design I probably not ba able to work on the other tasks. so this 
+-- is just for reference.  
+
+create or replace TABLE NETFLIX_TYPE_DIM (
+    TYPE_id NUMBER(38,0) ,
+	TYPE VARCHAR(16777216),
+	primary key (TYPE_id)
+);
+
+create or replace TABLE NETFLIX_DIRECTOR_DIM (
+    DIRECTOR_id NUMBER(38,0) ,
+	DIRECTOR VARCHAR(16777216),
+	primary key (DIRECTOR_id)
+);
+
+create or replace TABLE NETFLIX_COUNTRY_DIM (
+    COUNTRY_id NUMBER(38,0) ,
+	TYPE VARCHAR(16777216),
+	primary key (COUNTRY_id)
+);
+
+create or replace TABLE NETFLIX_RELEASE_YEAr_DIM (
+    RELEASE_YEAR_id NUMBER(38,0) ,
+	RELEASE_YEAR VARCHAR(16777216),
+	primary key (RELEASE_YEAr_id)
+);
+
+create or replace TABLE NETFLIX_RATING_DIM (
+    RATING_id NUMBER(38,0) ,
+	RATING VARCHAR(16777216),
+	primary key (RATING_id)
+);
+
+create or replace TABLE NETFLIX_TITLE_CAST_DIM (
+	CAST_ID NUMBER(38,0) NOT NULL,
+	FIRST_NAME VARCHAR(16777216),
+	LAST_NAME VARCHAR(16777216),
+	MIDDLE_NAME VARCHAR(16777216),
+	LISTED_IN VARCHAR(16777216),
+	primary key (CAST_ID)
+);
+
+
+
+create or replace TABLE NETFLIX_TITLE_FACT cluster by (RELEASE_YEAR_id)(
+	SHOW_ID NUMBER(38,0) NOT NULL,
+	TYPE_id NUMBER(38,0) ,
+	TITLE VARCHAR(16777216),
+	DIRECTOR_id NUMBER(38,0) ,
+	COUNTRY_id NUMBER(38,0) ,
+	DATE_ADDED DATE,
+	RELEASE_YEAR_id NUMBER(38,0),
+	RATING_id NUMBER(38,0) ,
+	DURATION VARCHAR(16777216),
+	DESCRIPTION VARCHAR(16777216),
+	primary key (SHOW_ID),
+    foreign key (TYPE_id) references NETFLIX_TYPE_DIM(TYPE_id),
+    foreign key (DIRECTOR_id) references NETFLIX_DIRECTOR_DIM(DIRECTOR_id),
+    foreign key (COUNTRY_id) references NETFLIX_COUNTRY_DIM(COUNTRY_id),
+    foreign key (COUNTRY_id) references NETFLIX_COUNTRY_DIM(COUNTRY_id),
+    foreign key (RELEASE_YEAR_id) references NETFLIX_RELEASE_YEAR_DIM(RELEASE_YEAR_id),
+   foreign key (RATING_id) references NETFLIX_RATING_DIM(RATING_id)
+    
+);

@@ -1,0 +1,28 @@
+/*
+Stage 4 : Write SQL to validate the data staged and loaded, for example:
+
+Identify and report any missing, invalid or strange data. This can be anything you determine in the provided file or have generated in Stage 3.
+
+Output - Snowflake Views
+*/
+
+SELECT
+    SHOW_ID ,
+	TYPE,
+	TITLE ,
+	DIRECTOR ,
+	COUNTRY ,
+	DATE_ADDED,
+	RELEASE_YEAR ,
+    CASE
+    WHEN TRY_CAST(RELEASE_YEAR AS INTEGER) IS NOT NULL THEN TO_NUMBER(RELEASE_YEAR)
+    ELSE null 
+    END AS converted_integer,
+	RATING ,
+	DURATION ,
+	DESCRIPTION,
+    LISTED_IN
+FROM 
+    NETFLIX_RAW_data 
+WHERE   DIRECTOR is null or title is null or len(COUNTRY)<2 or converted_integer>2024 
+or converted_integer<1900 converted_integer is null;
