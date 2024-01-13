@@ -25,4 +25,4 @@ SELECT
 FROM 
     NETFLIX_RAW_data 
 WHERE   DIRECTOR is null or title is null or len(COUNTRY)<2 or converted_integer>2024 
-or converted_integer<1900 converted_integer is null;
+or converted_integer<1900 ;

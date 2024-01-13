@@ -53,7 +53,6 @@ select  SHOW_ID ,
 
 
 -- wrote a procedure to populate NETFLIX_TITLE_cast table that contains first and last name info. failed to compile!
--- 
 
 
 CREATE OR REPLACE PROCEDURE insert_cast()
@@ -65,7 +64,7 @@ DECLARE
   num_commas INT;
   full_name STRING;
 BEGIN
-  FOR row IN (SELECT SHOW_ID, cast FROM NETFLIX_raw) DO
+  FOR row IN (SELECT SHOW_ID, cast FROM NETFLIX_RAW_DATA) DO
     -- get full name string
     SELECT REGEXP_COUNT(row.cast, ',') INTO num_commas;
     

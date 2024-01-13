@@ -90,7 +90,7 @@ from NETFLIX_TITLE a
 join NETFLIX_TITLE_CAST b
 on a.show_id=b.show_id
 where a.NAME_FROM_RAWDATA='Woody Harrelson' and a.type='Movie')
-AND NAME_FROM_RAWDATA!='Woody Harrelson' AND GENDER='FEMALE')-- Not able to figure out how to do it
+AND NAME_FROM_RAWDATA!='Woody Harrelson' AND GENDER='FEMALE')-- Not able to figure out how to do  GENDER='FEMALE' thing
 SELECT count(*), NAME_FROM_RAWDATA
 from NAME_LIST
 group by NAME_FROM_RAWDATA
